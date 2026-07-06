@@ -33,10 +33,11 @@ class DigitDataGenerator(Sequence):
 
         
         if self.augment:
-            self.aug_layer = keras.Sequential([
-                keras.layers.RandomRotation(0.05),      
-                keras.layers.RandomTranslation(0.1, 0.1),
-                keras.layers.RandomZoom(0.1),
+            self.aug_pipeline = A.Compose([
+                A.Rotate(limit=15, p=0.5),                             
+                A.Affine(translate_percent=0.1, scale=(0.9, 1.1), p=0.5),  
+                A.GaussNoise(var_limit=(5.0, 20.0), p=0.2),            
+                A.RandomBrightnessContrast(p=0.2),                    
             ])
 
         self.on_epoch_end()
