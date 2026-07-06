@@ -54,12 +54,16 @@ class DigitDataGenerator(Sequence):
         for i, sample_idx in enumerate(batch_samples):
             filepath, label = self.samples[sample_idx]
             img = load_img(filepath, color_mode="grayscale", target_size=self.img_size)
-            img_array = img_to_array(img) / 255.0  # normalize
-            X_batch[i] = img_array
-            y_batch[i] = label
+            
+            img_array = img_to_array(img) 
+            
 
         if self.augment:
-            X_batch = self.aug_layer(X_batch, training=True).numpy()
+            img_array = self.aug_pipeline(image=img_array)["image"]
+
+        X_batch[i] = img_array / 255.0  
+        y_batch[i] = label
+            
 
         return X_batch, y_batch
 
