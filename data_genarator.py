@@ -3,6 +3,7 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import albumentations as A
 
 
 class DigitDataGenerator(Sequence):
