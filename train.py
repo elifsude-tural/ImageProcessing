@@ -4,7 +4,7 @@ from data_generator import DigitDataGenerator
 import os
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
 
-tensorboard_callback = TensorBoard(log_dir="logs")
+
 
 early_stop = EarlyStopping(
     monitor="val_loss",
@@ -68,6 +68,15 @@ def val_step(x, y):
     val_acc.update_state(y, preds)
     val_loss_metric.update_state(loss)
 
+
+
+best_val_acc = 0.0            
+best_val_loss = float("inf")  
+patience = 3                  # EarlyStopping: kaç epoch iyileşme olmazsa durulacak
+wait = 0                      # EarlyStopping: kaç epoch'tur iyileşme olmadığını sayan sayaç
+best_weights = None           
+
+
 for epoch in range(epochs):
     train_acc.reset_state()
     val_acc.reset_state()
@@ -87,6 +96,30 @@ for epoch in range(epochs):
           f"train_acc: {train_acc.result():.4f} - "
           f"val_acc: {val_acc.result():.4f} - "
           f"val_loss: {val_loss_metric.result():.4f}")
+    
+    
+    current_val_acc  = float(val_acc.result())
+    current_val_loss = float(val_loss_metric.result())
+
+    # ModelCheckpoint
+    if current_val_acc > best_val_acc:
+        best_val_acc = current_val_acc
+        model.save("saved_models/best_digit_model.keras")
+        print(f"  -> val_acc iyileşti ({best_val_acc:.4f}), model kaydedildi")
+
+    
+
+    # EarlyStopping
+    if current_val_loss < best_val_loss:      
+        best_val_loss = current_val_loss      
+        wait = 0                              
+        best_weights = model.get_weights()    
+    else:                                    
+        wait += 1                             
+        if wait >= patience:                  
+            print(f"  -> val_loss {patience} epoch iyileşmedi, erken duruluyor")
+            model.set_weights(best_weights)   
+            break                             
 
 os.makedirs("saved_models", exist_ok=True)
 model.save("saved_models/digit_model.keras")
